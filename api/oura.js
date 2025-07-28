@@ -1,5 +1,3 @@
-const axios = require("axios");
-
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader("Access-Control-Allow-Credentials", true);
@@ -40,7 +38,7 @@ export default async function handler(req, res) {
 
     // Fetch both endpoints concurrently
     const [dailySleepResponse, sleepResponse] = await Promise.all([
-      axios.get(
+      fetch(
         `https://api.ouraring.com/v2/usercollection/daily_sleep?start_date=${start_date}&end_date=${end_date}`,
         {
           headers: {
@@ -48,7 +46,7 @@ export default async function handler(req, res) {
           },
         }
       ),
-      axios.get(
+      fetch(
         `https://api.ouraring.com/v2/usercollection/sleep?start_date=${start_date}&end_date=${end_date}`,
         {
           headers: {
@@ -60,8 +58,15 @@ export default async function handler(req, res) {
 
     console.log("Oura API responses received");
 
-    const dailySleepData = dailySleepResponse.data.data || [];
-    const sleepData = sleepResponse.data.data || [];
+    // Check if requests were successful
+    if (!dailySleepResponse.ok || !sleepResponse.ok) {
+      throw new Error(
+        `HTTP error! daily: ${dailySleepResponse.status}, sleep: ${sleepResponse.status}`
+      );
+    }
+
+    const dailySleepData = (await dailySleepResponse.json()).data || [];
+    const sleepData = (await sleepResponse.json()).data || [];
 
     console.log(
       `Daily sleep records: ${dailySleepData.length}, Sleep records: ${sleepData.length}`
@@ -159,15 +164,12 @@ export default async function handler(req, res) {
 
     res.json(combinedData);
   } catch (error) {
-    console.error(
-      "Error fetching Oura data:",
-      error.response?.data || error.message
-    );
+    console.error("Error fetching Oura data:", error.message);
 
-    // Handle specific Oura API errors
-    if (error.response?.status === 401) {
+    // Handle specific HTTP errors
+    if (error.message.includes("401")) {
       res.status(401).json({ error: "Invalid Oura API token" });
-    } else if (error.response?.status === 429) {
+    } else if (error.message.includes("429")) {
       res.status(429).json({ error: "Rate limit exceeded" });
     } else {
       res.status(500).json({ error: "Failed to fetch sleep data" });
