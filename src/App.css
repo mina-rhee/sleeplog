@@ -85,6 +85,7 @@ body {
   margin: 0 30px;
   display: flex;
   align-items: flex-start;
+  padding-top: 20px;
   min-height: 0; /* Important: allows flex item to shrink */
 }
 
@@ -94,8 +95,8 @@ body {
   grid-template-columns: 1fr;
   gap: 2rem;
   grid-auto-rows: 1fr;
-  margin: 20px 0; /* Changed from margin: 20px to margin: 20px 0 */
   width: 100%;
+  margin-bottom: 40px;
 }
 
 @media (min-width: 768px) {
