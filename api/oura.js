@@ -56,15 +56,15 @@ export default async function handler(req, res) {
       ),
     ]);
 
-    console.log(
-      "Oura API responses received",
-      "daily sleep ",
-      dailySleepResponse
-    );
-    console.log("sleep response", sleepResponse);
+    // Check if requests were successful
+    if (!dailySleepResponse.ok || !sleepResponse.ok) {
+      throw new Error(
+        `HTTP error! daily: ${dailySleepResponse.status}, sleep: ${sleepResponse.status}`
+      );
+    }
 
-    const dailySleepData = dailySleepResponse.data.data || [];
-    const sleepData = sleepResponse.data.data || [];
+    const dailySleepData = (await dailySleepResponse.json()).data || [];
+    const sleepData = (await sleepResponse.json()).data || [];
 
     console.log(
       `Daily sleep records: ${dailySleepData.length}, Sleep records: ${sleepData.length}`
