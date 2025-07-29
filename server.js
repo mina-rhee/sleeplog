@@ -6,7 +6,7 @@ require("dotenv").config();
 const app = express();
 app.use(cors());
 
-app.get("/api/oura/sleep", async (req, res) => {
+app.get("/api/oura", async (req, res) => {
   console.log("API called with params:", req.query);
 
   const { start_date, end_date } = req.query;
@@ -69,74 +69,38 @@ app.get("/api/oura/sleep", async (req, res) => {
       });
 
     // Process each day's sleep sessions and combine into single objects
-    const combinedData = Array.from(sleepByDay.entries())
-      .map(([day, sessions]) => {
+    const combinedData = Array.from(sleepByDay.entries()).map(
+      ([day, sessions]) => {
         const dailyData = dailySleepMap.get(day);
 
-        // Sort sessions by bedtime_start to find earliest and latest
-        const sortedSessions = sessions.sort(
-          (a, b) =>
-            new Date(a.bedtime_start).getTime() -
-            new Date(b.bedtime_start).getTime()
+        const totalSleepDuration = sessions.reduce(
+          (sleepDuration, session) =>
+            session.total_sleep_duration + sleepDuration,
+          0
         );
 
-        // Aggregate data across all sessions for this day
-        let totalSleepDuration = 0;
-        let allHrvValues = [];
-        let lowestHeartRates = [];
-
-        sortedSessions.forEach((session) => {
-          // Sum total sleep duration
-          totalSleepDuration += session.total_sleep_duration || 0;
-
-          // Collect all HRV values
-          if (
-            session.hrv &&
-            session.hrv.items &&
-            session.hrv.items.length > 0
-          ) {
-            const validHrvValues = session.hrv.items.filter(
-              (value) => value > 0
-            );
-            allHrvValues.push(...validHrvValues);
-          }
-
-          // Collect heart rates to find the lowest
-          if (session.lowest_heart_rate && session.lowest_heart_rate > 0) {
-            lowestHeartRates.push(session.lowest_heart_rate);
-          }
-        });
-
-        // Calculate aggregated values
-        const averageHrv =
-          allHrvValues.length > 0
-            ? allHrvValues.reduce((sum, value) => sum + value, 0) /
-              allHrvValues.length
-            : 0;
-
-        const overallLowestHeartRate =
-          lowestHeartRates.length > 0 ? Math.min(...lowestHeartRates) : 0;
-
-        // Use earliest bedtime_start and latest bedtime_end
-        const earliestSession = sortedSessions[0];
-        const latestSession = sortedSessions.reduce((latest, current) =>
-          new Date(current.bedtime_end) > new Date(latest.bedtime_end)
-            ? current
-            : latest
-        );
+        const mainSession = sessions.sort((a, b) => {
+          if (a.type === "long_sleep") return -1;
+          if (b.type === "long_sleep") return -1;
+          return b.totalSleepDuration - a.totalSleepDuration;
+        })[0];
 
         return {
-          bedtimeEnd: new Date(latestSession.bedtime_end),
-          bedtimeStart: new Date(earliestSession.bedtime_start),
+          bedtimeEnd: new Date(mainSession.bedtime_end),
+          bedtimeStart: new Date(mainSession.bedtime_start),
           day: new Date(day),
           sleepScore: dailyData ? dailyData.score || 0 : 0,
-          hrv: Math.round(averageHrv),
           totalSleep: totalSleepDuration, // Total sleep across all sessions
-          lowestHeartRate: overallLowestHeartRate,
+          sessions: sessions.map((session) => ({
+            start: new Date(session.bedtime_start),
+            end: new Date(session.bedtime_end),
+            phases: session.sleep_phase_5_min,
+            lowestHeartRate: session.lowest_heart_rate,
+            averageHRV: session.average_hrv,
+          })),
         };
-      })
-      // Sort by day in ascending order
-      .sort((a, b) => a.day.getTime() - b.day.getTime());
+      }
+    );
 
     console.log(`Combined data created: ${combinedData.length} records`);
 

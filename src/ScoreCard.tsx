@@ -1,14 +1,21 @@
 import React from "react";
 import "./App.css";
 
+export type SleepSession = {
+  start: Date;
+  end: Date;
+  phases: string;
+  lowestHeartRate: number;
+  averageHRV: number;
+};
+
 export type SleepData = {
+  day: Date;
   bedtimeEnd: Date;
   bedtimeStart: Date;
-  day: Date;
   sleepScore: number;
-  hrv: number;
   totalSleep: number;
-  lowestHeartRate: number;
+  sessions: SleepSession[];
 };
 
 // Helper function to format time duration
@@ -33,22 +40,24 @@ const getDayName = (date: Date): string => {
   return date.toLocaleDateString("en-US", { weekday: "long" });
 };
 
+const getDayDisplay = (date: Date) => {
+  if (isYesterday(date)) return "Yesterday";
+  return `${getDayName(date)}, ${date.getDate()}`;
+};
+
 // Helper function to get score color
 const getScoreColor = (score: number): string => {
   if (score >= 85) return "#4ade80"; // green
   if (score >= 70) return "#fbbf24"; // yellow
-  if (score >= 50) return "#fb923c"; // orange
+  if (score >= 50) return "#e58267"; // orange
   return "#ef4444"; // red
 };
 
-function plausiblyStillWaiting(date: Date): boolean {
-  const today = new Date();
+const isYesterday = (date: Date) => {
   const yesterday = new Date();
-  yesterday.setDate(today.getDate() - 1);
-  return (
-    date.toDateString() === yesterday.toDateString() && date.getHours() < 12
-  );
-}
+  yesterday.setDate(yesterday.getDate() - 1);
+  return date.toDateString() === yesterday.toDateString();
+};
 
 type ScoreCardProps = {
   day: Date;
@@ -57,35 +66,24 @@ type ScoreCardProps = {
 
 const ScoreCard: React.FC<ScoreCardProps> = (props) => {
   if (!props.data) {
-    const couldBeWaiting = plausiblyStillWaiting(props.day);
+    const couldBeWaiting = isYesterday(props.day) && new Date().getHours() < 12;
     return (
       <div className="day-card">
-        <div className="day-header">
-          {getDayName(props.day)}, {props.day.getDate()}
-        </div>
+        <div className="day-header">{getDayDisplay(props.day)}</div>
         <div className="no-data-message">
-          {couldBeWaiting ? (
-            "No data (yet!)"
-          ) : (
-            <>
-              No data...
-              <br />
-              Perhaps no sleep?
-            </>
-          )}
+          <>
+            No data...
+            <br />
+            {couldBeWaiting ? "(yet!)" : "Perhaps no sleep?"}
+          </>
         </div>
       </div>
     );
   }
-  const {
-    sleepScore,
-    day,
-    totalSleep,
-    bedtimeStart,
-    bedtimeEnd,
-    hrv,
-    lowestHeartRate,
-  } = props.data;
+  const { sleepScore, day, totalSleep, bedtimeStart, bedtimeEnd, sessions } =
+    props.data;
+
+  console.log("props data", props.data);
 
   return (
     <div
@@ -95,20 +93,20 @@ const ScoreCard: React.FC<ScoreCardProps> = (props) => {
       }
     >
       {/* Header */}
-      <div className="day-header">
-        {getDayName(day)}, {day.getDate()}
-      </div>
+      <div className="day-header">{getDayDisplay(day)}</div>
       <div className="score-section">{sleepScore}</div>
 
       {/* Sleep Details */}
       <div className="timing-section">
-        <div className="total-sleep">{formatDuration(totalSleep)}</div>
+        <div className="total-sleep">{formatDuration(totalSleep)} </div>
         <div className="sleep-timespan">
-          {formatTime(bedtimeStart)} - {formatTime(bedtimeEnd)}
+          {formatTime(bedtimeStart)} - {formatTime(bedtimeEnd)}{" "}
+          {sessions.length > 1 && (
+            <span className="nap-section">
+              + {sessions.length - 1} {sessions.length > 2 ? "naps" : "nap"}
+            </span>
+          )}
         </div>
-      </div>
-      <div className="heart-section">
-        {lowestHeartRate} bpm, {hrv}ms hrv
       </div>
     </div>
   );

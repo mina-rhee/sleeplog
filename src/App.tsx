@@ -7,23 +7,33 @@ const formatDate = (date: Date): string => {
   return date.toISOString().split("T")[0];
 };
 
-let lastSevenDaysArray = Array.from({ length: 7 }, (_, i) => {
+const lastSevenDaysReverseOrder = Array.from({ length: 7 }, (_, i) => {
   const date = new Date();
   date.setDate(date.getDate() - (i + 1));
   return date;
 });
 
-const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-
-if (!isMobile) {
-  lastSevenDaysArray = lastSevenDaysArray.reverse();
-}
+const lastSevenDaysForwardOrder = [...lastSevenDaysReverseOrder].reverse();
 
 const App: React.FC = () => {
   const [sleepData, setSleepData] = useState<{
     [dateString: string]: SleepData;
   }>({});
   const [loading, setLoading] = useState(true);
+  const [vertical, setVertical] = useState(true);
+
+  useEffect(function listenForCalendarOrientation() {
+    const checkWindowWidth = () => {
+      console.log("setting vertical", window.innerWidth < 1300);
+      setVertical(window.innerWidth < 1300);
+    };
+
+    checkWindowWidth();
+
+    window.addEventListener("resize", checkWindowWidth);
+
+    return () => window.removeEventListener("resize", checkWindowWidth);
+  }, []);
 
   useEffect(() => {
     const querySleepData = async () => {
@@ -39,9 +49,11 @@ const App: React.FC = () => {
         const startDateStr = formatDate(startDate);
         const endDateStr = formatDate(endDate);
 
+        console.log("1");
         const response = await fetch(
-          `/api/oura?start_date=${startDateStr}&end_date=${endDateStr}`
+          `http://localhost:5000/api/oura?start_date=${startDateStr}&end_date=${endDateStr}`
         );
+        console.log(response);
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -93,7 +105,10 @@ const App: React.FC = () => {
 
         <div className="calendar-container">
           <div className="calendar-grid">
-            {lastSevenDaysArray.map((date, i) => {
+            {(vertical
+              ? lastSevenDaysReverseOrder
+              : lastSevenDaysForwardOrder
+            ).map((date, i) => {
               const daySleepData = sleepData[date.toDateString()];
               return <ScoreCard key={i} data={daySleepData} day={date} />;
             })}

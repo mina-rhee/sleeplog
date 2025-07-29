@@ -59,7 +59,6 @@ body {
 /* Header Section */
 .header-section {
   text-align: center;
-  margin-bottom: 2rem;
   flex-shrink: 0;
 }
 
@@ -99,18 +98,6 @@ body {
   margin-bottom: 40px;
 }
 
-@media (min-width: 768px) {
-  .calendar-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .calendar-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
 @media (min-width: 1280px) {
   .calendar-grid {
     grid-template-columns: repeat(7, 1fr);
@@ -137,8 +124,12 @@ body {
 .score-section {
   color: var(--score-color);
   font-weight: 800;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   margin-bottom: 5px;
+}
+
+.total-sleep {
+  font-size: 0.9rem;
 }
 
 /* Details Section */
@@ -147,7 +138,7 @@ body {
   font-weight: 700;
 }
 
-.heart-section {
+.nap-section {
   font-size: 0.8rem;
   font-weight: 300;
 }
