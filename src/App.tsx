@@ -51,7 +51,7 @@ const App: React.FC = () => {
 
         console.log("1");
         const response = await fetch(
-          `http://localhost:5000/api/oura?start_date=${startDateStr}&end_date=${endDateStr}`
+          `/api/oura?start_date=${startDateStr}&end_date=${endDateStr}`
         );
         console.log(response);
 
