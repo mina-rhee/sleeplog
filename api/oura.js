@@ -56,7 +56,12 @@ export default async function handler(req, res) {
       ),
     ]);
 
-    console.log("Oura API responses received");
+    console.log(
+      "Oura API responses received",
+      "daily sleep ",
+      dailySleepResponse.data
+    );
+    console.log("sleep response", sleepResponse.data);
 
     const dailySleepData = dailySleepResponse.data.data || [];
     const sleepData = sleepResponse.data.data || [];
