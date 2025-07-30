@@ -42,7 +42,7 @@ const App: React.FC = () => {
 
         // Calculate date range: yesterday to a week before
         const endDate = new Date();
-        endDate.setDate(endDate.getDate() - 1);
+        endDate.setDate(endDate.getDate() + 1);
         const startDate = new Date();
         startDate.setDate(endDate.getDate() - 6); // 7 days total including yesterday
 
