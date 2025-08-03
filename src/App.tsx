@@ -44,7 +44,7 @@ const App: React.FC = () => {
         const endDate = new Date();
         endDate.setDate(endDate.getDate() + 1);
         const startDate = new Date();
-        startDate.setDate(endDate.getDate() - 6); // 7 days total including yesterday
+        startDate.setDate(endDate.getDate() - 8); // 7 days total including yesterday
 
         const startDateStr = formatDate(startDate);
         const endDateStr = formatDate(endDate);
@@ -68,6 +68,11 @@ const App: React.FC = () => {
             bedtimeEnd: new Date(item.bedtimeEnd),
             bedtimeStart: new Date(item.bedtimeStart),
             day: new Date(item.day),
+            sessions: item.sessions.map((session: any) => ({
+              ...session,
+              start: new Date(session.start),
+              end: new Date(session.end),
+            })),
           };
           return { ...dataMap, [itemObject.day.toDateString()]: itemObject };
         }, {} as { [dateString: string]: SleepData });

@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import "./App.css";
+import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 
 export type SleepSession = {
   start: Date;
@@ -65,6 +66,11 @@ type ScoreCardProps = {
 };
 
 const ScoreCard: React.FC<ScoreCardProps> = (props) => {
+  const [showExpanded, setShowExpanded] = useState(false);
+  const toggleShowExpanded = useCallback(() => {
+    setShowExpanded((prev) => !prev);
+  }, []);
+
   if (!props.data) {
     const couldBeWaiting = isYesterday(props.day) && new Date().getHours() < 12;
     return (
@@ -107,7 +113,29 @@ const ScoreCard: React.FC<ScoreCardProps> = (props) => {
             </span>
           )}
         </div>
+        <div className="sleep-heart">
+          <span className="heart-emoji">🫀</span> {sessions[0].lowestHeartRate}
+          bpm, avg HRV {sessions[0].averageHRV}
+        </div>
       </div>
+      {/* Nap Section */}
+      {sessions.length > 1 && (
+        <>
+          <div className="expand-arrow" onClick={toggleShowExpanded}>
+            {showExpanded ? <IoIosArrowUp /> : <IoIosArrowDown />}
+          </div>
+          {showExpanded && (
+            <div className="expanded-section">
+              <div className="naps-title">naps:</div>
+              {sessions.slice(1).map((session, i) => (
+                <div className="nap-time">
+                  {formatTime(session.start)} - {formatTime(session.end)}
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };

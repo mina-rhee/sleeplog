@@ -93,7 +93,6 @@ body {
   display: grid;
   grid-template-columns: 1fr;
   gap: 2rem;
-  grid-auto-rows: 1fr;
   width: 100%;
   margin-bottom: 40px;
 }
@@ -143,9 +142,36 @@ body {
   font-weight: 300;
 }
 
+.heart-emoji {
+  font-size: 0.9rem;
+}
+
+.sleep-heart {
+  font-weight: 400;
+}
+
 .no-data-message {
   font-size: 0.9rem;
   margin-bottom: 10px;
+}
+
+.expand-arrow {
+  color: white;
+  cursor: pointer;
+  margin: auto;
+  margin-top: 10px;
+  margin-bottom: -8px;
+}
+
+.naps-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.nap-time {
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-top: 2px;
 }
 
 /* Empty State */
