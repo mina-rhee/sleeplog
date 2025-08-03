@@ -99,7 +99,8 @@ const App: React.FC = () => {
 
         {loading ? (
           <div className="loading-container">
-            <img className="loading-clouds" src="/clouds.gif" />
+            <div className="loading-message">loading...</div>
+            {/* <img className="loading-clouds" src="/clouds.gif" />
             <div className="loading-message">
               loading{" "}
               <span className="dots">
@@ -107,7 +108,7 @@ const App: React.FC = () => {
                 <span className="dot">.</span>
                 <span className="dot">.</span>
               </span>
-            </div>
+            </div> */}
           </div>
         ) : (
           <div className="calendar-container">
