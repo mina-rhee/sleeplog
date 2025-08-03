@@ -114,7 +114,7 @@ const ScoreCard: React.FC<ScoreCardProps> = (props) => {
           )}
         </div>
         <div className="sleep-heart">
-          <span className="heart-emoji">🫀</span> {sessions[0].lowestHeartRate}
+          <span className="heart-emoji">🩺</span> {sessions[0].lowestHeartRate}
           bpm, avg HRV {sessions[0].averageHRV}
         </div>
       </div>
