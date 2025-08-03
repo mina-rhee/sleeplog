@@ -88,17 +88,6 @@ const App: React.FC = () => {
     querySleepData();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-content">
-          <div className="loading-title">⋆˙⟡ how did mina sleep? ⋆˙⟡</div>
-          <div className="loading-message">Loading sleep data...</div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="app-container">
       <div className="content-wrapper">
@@ -108,17 +97,31 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        <div className="calendar-container">
-          <div className="calendar-grid">
-            {(vertical
-              ? lastSevenDaysReverseOrder
-              : lastSevenDaysForwardOrder
-            ).map((date, i) => {
-              const daySleepData = sleepData[date.toDateString()];
-              return <ScoreCard key={i} data={daySleepData} day={date} />;
-            })}
+        {loading ? (
+          <div className="loading-container">
+            <img className="loading-clouds" src="/clouds.gif" />
+            <div className="loading-message">
+              loading{" "}
+              <span className="dots">
+                <span className="dot">.</span>
+                <span className="dot">.</span>
+                <span className="dot">.</span>
+              </span>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="calendar-container">
+            <div className="calendar-grid">
+              {(vertical
+                ? lastSevenDaysReverseOrder
+                : lastSevenDaysForwardOrder
+              ).map((date, i) => {
+                const daySleepData = sleepData[date.toDateString()];
+                return <ScoreCard key={i} data={daySleepData} day={date} />;
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
