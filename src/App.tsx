@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import "./App.css";
 import ScoreCard, { SleepData } from "./ScoreCard";
 
-// Helper function to format date as YYYY-MM-DD
 const formatDate = (date: Date): string => {
   return date.toISOString().split("T")[0];
 };
@@ -24,7 +23,6 @@ const App: React.FC = () => {
 
   useEffect(function listenForCalendarOrientation() {
     const checkWindowWidth = () => {
-      console.log("setting vertical", window.innerWidth < 1300);
       setVertical(window.innerWidth < 1300);
     };
 
@@ -40,20 +38,17 @@ const App: React.FC = () => {
       try {
         setLoading(true);
 
-        // Calculate date range: yesterday to a week before
         const endDate = new Date();
         endDate.setDate(endDate.getDate() + 1);
         const startDate = new Date();
-        startDate.setDate(endDate.getDate() - 8); // 7 days total including yesterday
+        startDate.setDate(endDate.getDate() - 8);
 
         const startDateStr = formatDate(startDate);
         const endDateStr = formatDate(endDate);
 
-        console.log("1");
         const response = await fetch(
           `/api/oura?start_date=${startDateStr}&end_date=${endDateStr}`
         );
-        console.log(response);
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -61,7 +56,6 @@ const App: React.FC = () => {
 
         const data: any[] = await response.json();
 
-        // Convert date strings to Date objects
         const dates = data.reduce((dataMap, item) => {
           const itemObject = {
             ...item,
@@ -100,26 +94,19 @@ const App: React.FC = () => {
         {loading ? (
           <div className="loading-container">
             <div className="loading-message">loading...</div>
-            {/* <img className="loading-clouds" src="/clouds.gif" />
-            <div className="loading-message">
-              loading{" "}
-              <span className="dots">
-                <span className="dot">.</span>
-                <span className="dot">.</span>
-                <span className="dot">.</span>
-              </span>
-            </div> */}
           </div>
         ) : (
-          <div className="calendar-container">
-            <div className="calendar-grid">
-              {(vertical
-                ? lastSevenDaysReverseOrder
-                : lastSevenDaysForwardOrder
-              ).map((date, i) => {
-                const daySleepData = sleepData[date.toDateString()];
-                return <ScoreCard key={i} data={daySleepData} day={date} />;
-              })}
+          <div className="scroll-wrapper">
+            <div className="calendar-container">
+              <div className="calendar-grid">
+                {(vertical
+                  ? lastSevenDaysReverseOrder
+                  : lastSevenDaysForwardOrder
+                ).map((date, i) => {
+                  const daySleepData = sleepData[date.toDateString()];
+                  return <ScoreCard key={i} data={daySleepData} day={date} />;
+                })}
+              </div>
             </div>
           </div>
         )}

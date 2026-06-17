@@ -6,10 +6,30 @@ body,
   padding: 0;
 }
 
+@property --ring-offset {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@keyframes ringPulse {
+  to { --ring-offset: 520px; }
+}
+
 body {
   background-color: #050f1c;
+  background-attachment: fixed;
+  background-image: repeating-radial-gradient(
+    ellipse at center,
+    #071624 var(--ring-offset),
+    #061220 calc(var(--ring-offset) + 130px),
+    #050f1c calc(var(--ring-offset) + 260px),
+    #061220 calc(var(--ring-offset) + 390px),
+    #071624 calc(var(--ring-offset) + 520px)
+  );
+  animation: ringPulse 5s linear infinite;
   color: #f4f4f4;
-  overflow-x: hidden; /* Prevent horizontal scroll */
+  overflow-x: hidden;
 }
 
 .app-container {
@@ -27,7 +47,6 @@ body {
 /* Content Wrapper */
 .content-wrapper {
   max-width: 96rem;
-  flex: 1;
   display: flex;
   flex-direction: column;
   margin: 0 auto;
@@ -123,13 +142,13 @@ body {
   margin-top: 0.5rem;
 }
 
+.scroll-wrapper {
+  position: relative;
+}
+
 .calendar-container {
-  flex: 1;
   margin: 0 30px;
-  display: flex;
-  align-items: flex-start;
   padding-top: 20px;
-  min-height: 0; /* Important: allows flex item to shrink */
 }
 
 /* Calendar Grid */
@@ -334,6 +353,6 @@ body {
   }
 
   .calendar-container {
-    margin: 0 15px; /* Reduce margins on mobile */
+    margin: 0 15px;
   }
 }
