@@ -51,7 +51,10 @@ const getDayName = (date: Date): string => {
   return date.toLocaleDateString("en-US", { weekday: "long" });
 };
 
+const isToday = (date: Date) => date.toDateString() === new Date().toDateString();
+
 const getDayDisplay = (date: Date) => {
+  if (isToday(date)) return "Today";
   if (isYesterday(date)) return "Yesterday";
   return `${getDayName(date)}, ${date.getDate()}`;
 };
@@ -82,16 +85,12 @@ const ScoreCard: React.FC<ScoreCardProps> = (props) => {
   }, []);
 
   if (!props.data) {
-    const couldBeWaiting = isYesterday(props.day) && new Date().getHours() < 12;
+    const couldBeWaiting = (isToday(props.day) || isYesterday(props.day)) && new Date().getHours() < 12;
     return (
       <div className="day-card">
         <div className="day-header">{getDayDisplay(props.day)}</div>
         <div className="no-data-message">
-          <>
-            No data...
-            <br />
-            {couldBeWaiting ? "(yet!)" : "Perhaps no sleep?"}
-          </>
+          No data...{couldBeWaiting && <><br />(yet!)</>}
         </div>
       </div>
     );
@@ -148,9 +147,12 @@ const ScoreCard: React.FC<ScoreCardProps> = (props) => {
             <div className="activity-score">{activityData.activityScore} <span className="activity-label">activity</span></div>
             <div className="activity-bar">
               {zones.map(z => (
-                <div key={z.key} className={`activity-bar-segment ${z.cls}`} style={{ width: pct(z.time) }}>
-                  <span className="segment-time">{fmtMins(z.time)}</span>
-                </div>
+                <div key={z.key} className={`activity-bar-segment ${z.cls}`} style={{ width: pct(z.time) }} />
+              ))}
+            </div>
+            <div className="activity-bar-times">
+              {zones.map(z => (
+                <div key={z.key} className="segment-time" style={{ width: pct(z.time) }}>{fmtMins(z.time)}</div>
               ))}
             </div>
 

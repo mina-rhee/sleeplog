@@ -1,6 +1,17 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
+import { DarkModeSwitch } from "react-toggle-dark-mode";
 import ScoreCard, { SleepData } from "./ScoreCard";
+import cloud from "./Realistic_Cloud_PNG_Transparent_Clip_Art_Image.png";
+
+const getInitialDayMode = (): boolean => {
+  const stored = localStorage.getItem("dayMode");
+  if (stored === "true" || stored === "false") {
+    return stored === "true";
+  }
+  const hour = new Date().getHours();
+  return hour >= 6 && hour < 18;
+};
 
 const formatDate = (date: Date): string => {
   return date.toISOString().split("T")[0];
@@ -8,7 +19,7 @@ const formatDate = (date: Date): string => {
 
 const lastSevenDaysReverseOrder = Array.from({ length: 7 }, (_, i) => {
   const date = new Date();
-  date.setDate(date.getDate() - (i + 1));
+  date.setDate(date.getDate() - i);
   return date;
 });
 
@@ -20,6 +31,12 @@ const App: React.FC = () => {
   }>({});
   const [loading, setLoading] = useState(true);
   const [vertical, setVertical] = useState(true);
+  const [dayMode, setDayMode] = useState<boolean>(getInitialDayMode);
+
+  useEffect(() => {
+    document.body.classList.toggle("day-mode", dayMode);
+    localStorage.setItem("dayMode", String(dayMode));
+  }, [dayMode]);
 
   useEffect(function listenForCalendarOrientation() {
     const checkWindowWidth = () => {
@@ -61,7 +78,7 @@ const App: React.FC = () => {
             ...item,
             bedtimeEnd: new Date(item.bedtimeEnd),
             bedtimeStart: new Date(item.bedtimeStart),
-            day: new Date(item.day),
+            day: new Date(item.day + 'T12:00:00'),
             sessions: item.sessions.map((session: any) => ({
               ...session,
               start: new Date(session.start),
@@ -84,10 +101,31 @@ const App: React.FC = () => {
 
   return (
     <div className="app-container">
+      <div className="clouds-layer" aria-hidden="true">
+        <img className="cloud" src={cloud} alt="" />
+        <img className="cloud" src={cloud} alt="" />
+        <img className="cloud" src={cloud} alt="" />
+        <img className="cloud" src={cloud} alt="" />
+      </div>
+      <div className="mode-toggle">
+        <DarkModeSwitch
+          checked={!dayMode}
+          onChange={(isDark) => setDayMode(!isDark)}
+          size={24}
+          moonColor="#f4f4f4"
+          sunColor="#4b4b4b"
+        />
+      </div>
       <div className="content-wrapper">
         <div className="header-section">
           <div className="title">
             ⋆˙⟡&nbsp;&nbsp;how is mina doing?&nbsp;&nbsp;⋆˙⟡
+          </div>
+          <div className="activity-legend">
+            <span className="legend-title">activity</span>
+            <span className="legend-item"><span className="legend-dot legend-low" />low</span>
+            <span className="legend-item"><span className="legend-dot legend-medium" />medium</span>
+            <span className="legend-item"><span className="legend-dot legend-high" />high</span>
           </div>
         </div>
 

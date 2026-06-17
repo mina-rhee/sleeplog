@@ -6,36 +6,78 @@ body,
   padding: 0;
 }
 
-@property --ring-offset {
-  syntax: '<length>';
-  inherits: false;
-  initial-value: 0px;
-}
-
-@keyframes ringPulse {
-  to { --ring-offset: 520px; }
-}
-
 body {
   background-color: #050f1c;
-  background-attachment: fixed;
-  background-image: repeating-radial-gradient(
-    ellipse at center,
-    #071624 var(--ring-offset),
-    #061220 calc(var(--ring-offset) + 130px),
-    #050f1c calc(var(--ring-offset) + 260px),
-    #061220 calc(var(--ring-offset) + 390px),
-    #071624 calc(var(--ring-offset) + 520px)
-  );
-  animation: ringPulse 5s linear infinite;
   color: #f4f4f4;
   overflow-x: hidden;
 }
+
+/* Drifting cloud background */
+.clouds-layer {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cloud {
+  position: absolute;
+  width: 360px; /* image is 8000x4491; scaled down */
+  height: auto;
+  opacity: 0.12; /* faint in dark mode */
+  will-change: transform;
+  animation-name: cloudDrift;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes cloudDrift {
+  from { transform: translateX(-45vw); }
+  to   { transform: translateX(145vw); }
+}
+
+/* Pseudo-random per-copy variation: distinct top / size / speed / phase */
+.cloud:nth-child(1) { top: 12%; width: 340px; animation-duration: 67s; animation-delay:  -5s; }
+.cloud:nth-child(2) { top: 38%; width: 440px; animation-duration: 89s; animation-delay: -48s; }
+.cloud:nth-child(3) { top: 62%; width: 300px; animation-duration: 53s; animation-delay: -25s; }
+.cloud:nth-child(4) { top: 80%; width: 400px; animation-duration: 79s; animation-delay: -63s; }
+
+/* Light mode: tint the white cloud gray so it reads on the cream bg */
+body.day-mode .cloud { filter: brightness(0.45); opacity: 0.16; }
+
+/* Day mode */
+body.day-mode {
+  background-color: #f7f0be;
+  background-image: none;
+  animation: none;
+  color: #1a1a1a;
+}
+
+body.day-mode .day-card     { border-color: #1a1a1a; }
+body.day-mode .activity-legend { border-color: rgba(0, 0, 0, 0.4); }
+body.day-mode .expand-arrow { color: #1a1a1a; }
+body.day-mode .segment-time { color: rgba(0, 0, 0, 0.8); }
+body.day-mode .activity-label { color: #1a1a1a; }
+body.day-mode .loading-message { color: #1a1a1a; }
+
+/* Day mode: heavier weight for key labels */
+body.day-mode .day-header { font-weight: 500; }
+body.day-mode .activity-label { font-weight: 600; }
+
+/* Day mode: push key text closer to black (override base opacity) */
+body.day-mode .activity-label,
+body.day-mode .sleep-timespan { opacity: 1; }
+
+/* Day mode: soften the sleep duration toward gray */
+body.day-mode .total-sleep { color: #555555; }
 
 .app-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 1;
 }
 
 .title {
@@ -124,6 +166,54 @@ body {
   text-align: center;
   flex-shrink: 0;
 }
+
+.activity-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.65rem;
+  font-weight: 300;
+  opacity: 0.9;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 6px;
+  padding: 4px 12px 4px 8px;
+}
+
+.mode-toggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+}
+
+.legend-title {
+  font-size: 0.6rem;
+  font-weight: 500;
+  opacity: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: 4px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.legend-low    { background-color: #22c55e; }
+.legend-medium { background-color: #d97706; }
+.legend-high   { background-color: #dc2626; }
 
 .main-title {
   font-size: 1.875rem;
@@ -277,26 +367,27 @@ body {
 }
 
 .activity-bar-segment {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   height: 100%;
-  min-width: 0;
-  overflow: hidden;
 }
 
-.activity-low    { background-color: #4ade80; }
-.activity-medium { background-color: #fbbf24; }
-.activity-high   { background-color: #ef4444; }
+.activity-low    { background-color: #22c55e; }
+.activity-medium { background-color: #d97706; }
+.activity-high   { background-color: #dc2626; }
+
+.activity-bar-times {
+  display: flex;
+  margin-top: 3px;
+  overflow: visible;
+}
 
 .segment-time {
-  font-size: 0.6rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.58rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 0 3px;
+  overflow: visible;
+  text-align: center;
+  min-width: 28px;
 }
 
 .activity-bar-labels {
@@ -318,7 +409,7 @@ body {
   font-size: 0.68rem;
   font-weight: 400;
   opacity: 0.9;
-  padding-top: 5px;
+  padding-top: 10px;
 }
 
 /* Empty State */

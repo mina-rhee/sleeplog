@@ -9,36 +9,6 @@ app.use(cors());
 app.get("/api/oura", async (req, res) => {
   console.log("API called with params:", req.query);
 
-  // DUMMY DATA for UI testing
-  const today = new Date();
-  const dummyData = Array.from({ length: 7 }, (_, i) => {
-    const day = new Date(today);
-    day.setDate(today.getDate() - (i + 1));
-    const bedStart = new Date(day);
-    bedStart.setHours(23, 15, 0, 0);
-    const bedEnd = new Date(day);
-    bedEnd.setDate(bedEnd.getDate() + 1);
-    bedEnd.setHours(7, 30, 0, 0);
-    return {
-      day: day,
-      bedtimeStart: bedStart,
-      bedtimeEnd: bedEnd,
-      sleepScore: [82, 91, 67, 74, 55, 88, 79][i],
-      totalSleep: [27000, 29400, 23400, 26100, 21600, 28800, 25200][i],
-      sessions: [{ start: bedStart, end: bedEnd, phases: "", lowestHeartRate: [48, 46, 52, 50, 55, 47, 49][i], averageHRV: [62, 71, 45, 58, 38, 68, 55][i] }],
-      activityData: {
-        activityScore: [76, 90, 52, 84, 61, 95, 70][i],
-        sedentaryTime: [32400, 25200, 43200, 28800, 39600, 21600, 36000][i],
-        lowActivityTime: [5400, 7200, 3600, 6300, 4500, 9000, 5400][i],
-        mediumActivityTime: [3600, 5400, 1800, 4500, 2700, 6300, 3600][i],
-        highActivityTime: [1800, 3600, 600, 2700, 900, 4500, 1800][i],
-        steps: [7800, 12400, 3200, 9600, 5100, 15800, 8200][i],
-      },
-    };
-  });
-  return res.json(dummyData);
-  // END DUMMY DATA
-
   const { start_date, end_date } = req.query;
 
   // Validate required parameters
@@ -134,7 +104,7 @@ app.get("/api/oura", async (req, res) => {
         return {
           bedtimeEnd: new Date(mainSession.bedtime_end),
           bedtimeStart: new Date(mainSession.bedtime_start),
-          day: new Date(day),
+          day: day,
           sleepScore: dailyData ? dailyData.score || 0 : 0,
           totalSleep: totalSleepDuration,
           sessions: sessions.map((session) => ({
