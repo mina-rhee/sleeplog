@@ -358,9 +358,9 @@ body.day-mode .total-sleep { color: #555555; }
 
 .activity-label {
   font-size: 0.65rem;
-  font-weight: 300;
+  font-weight: 450;
   color: #f4f4f4;
-  opacity: 0.6;
+  opacity: 0.85;
 }
 
 .activity-bar {
