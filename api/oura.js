@@ -124,7 +124,7 @@ export default async function handler(req, res) {
         return {
           bedtimeEnd: new Date(mainSession.bedtime_end),
           bedtimeStart: new Date(mainSession.bedtime_start),
-          day: new Date(day),
+          day: day,
           sleepScore: dailyData ? dailyData.score || 0 : 0,
           totalSleep: totalSleepDuration,
           sessions: sessions.map((session) => ({
