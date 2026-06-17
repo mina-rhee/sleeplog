@@ -9,6 +9,36 @@ app.use(cors());
 app.get("/api/oura", async (req, res) => {
   console.log("API called with params:", req.query);
 
+  // DUMMY DATA for UI testing
+  const today = new Date();
+  const dummyData = Array.from({ length: 7 }, (_, i) => {
+    const day = new Date(today);
+    day.setDate(today.getDate() - (i + 1));
+    const bedStart = new Date(day);
+    bedStart.setHours(23, 15, 0, 0);
+    const bedEnd = new Date(day);
+    bedEnd.setDate(bedEnd.getDate() + 1);
+    bedEnd.setHours(7, 30, 0, 0);
+    return {
+      day: day,
+      bedtimeStart: bedStart,
+      bedtimeEnd: bedEnd,
+      sleepScore: [82, 91, 67, 74, 55, 88, 79][i],
+      totalSleep: [27000, 29400, 23400, 26100, 21600, 28800, 25200][i],
+      sessions: [{ start: bedStart, end: bedEnd, phases: "", lowestHeartRate: [48, 46, 52, 50, 55, 47, 49][i], averageHRV: [62, 71, 45, 58, 38, 68, 55][i] }],
+      activityData: {
+        activityScore: [76, 90, 52, 84, 61, 95, 70][i],
+        sedentaryTime: [32400, 25200, 43200, 28800, 39600, 21600, 36000][i],
+        lowActivityTime: [5400, 7200, 3600, 6300, 4500, 9000, 5400][i],
+        mediumActivityTime: [3600, 5400, 1800, 4500, 2700, 6300, 3600][i],
+        highActivityTime: [1800, 3600, 600, 2700, 900, 4500, 1800][i],
+        steps: [7800, 12400, 3200, 9600, 5100, 15800, 8200][i],
+      },
+    };
+  });
+  return res.json(dummyData);
+  // END DUMMY DATA
+
   const { start_date, end_date } = req.query;
 
   // Validate required parameters
@@ -21,8 +51,8 @@ app.get("/api/oura", async (req, res) => {
   try {
     console.log("Fetching from Oura API...");
 
-    // Fetch both endpoints concurrently
-    const [dailySleepResponse, sleepResponse] = await Promise.all([
+    // Fetch all endpoints concurrently
+    const [dailySleepResponse, sleepResponse, dailyActivityResponse] = await Promise.all([
       axios.get(
         `https://api.ouraring.com/v2/usercollection/daily_sleep?start_date=${start_date}&end_date=${end_date}`,
         {
@@ -39,12 +69,21 @@ app.get("/api/oura", async (req, res) => {
           },
         }
       ),
+      axios.get(
+        `https://api.ouraring.com/v2/usercollection/daily_activity?start_date=${start_date}&end_date=${end_date}`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.OURA_ACCESS_TOKEN}`,
+          },
+        }
+      ),
     ]);
 
     console.log("Oura API responses received");
 
     const dailySleepData = dailySleepResponse.data.data || [];
     const sleepData = sleepResponse.data.data || [];
+    const dailyActivityData = dailyActivityResponse.data.data || [];
 
     console.log(
       `Daily sleep records: ${dailySleepData.length}, Sleep records: ${sleepData.length}`
@@ -54,6 +93,11 @@ app.get("/api/oura", async (req, res) => {
     const dailySleepMap = new Map();
     dailySleepData.forEach((dayData) => {
       dailySleepMap.set(dayData.day, dayData);
+    });
+
+    const dailyActivityMap = new Map();
+    dailyActivityData.forEach((dayData) => {
+      dailyActivityMap.set(dayData.day, dayData);
     });
 
     // Group sleep sessions by day and aggregate them
@@ -85,12 +129,14 @@ app.get("/api/oura", async (req, res) => {
           return b.totalSleepDuration - a.totalSleepDuration;
         })[0];
 
+        const activityRecord = dailyActivityMap.get(day);
+
         return {
           bedtimeEnd: new Date(mainSession.bedtime_end),
           bedtimeStart: new Date(mainSession.bedtime_start),
           day: new Date(day),
           sleepScore: dailyData ? dailyData.score || 0 : 0,
-          totalSleep: totalSleepDuration, // Total sleep across all sessions
+          totalSleep: totalSleepDuration,
           sessions: sessions.map((session) => ({
             start: new Date(session.bedtime_start),
             end: new Date(session.bedtime_end),
@@ -98,6 +144,14 @@ app.get("/api/oura", async (req, res) => {
             lowestHeartRate: session.lowest_heart_rate,
             averageHRV: session.average_hrv,
           })),
+          activityData: activityRecord ? {
+            activityScore: activityRecord.score,
+            sedentaryTime: activityRecord.sedentary_time,
+            lowActivityTime: activityRecord.low_activity_time,
+            mediumActivityTime: activityRecord.medium_activity_time,
+            highActivityTime: activityRecord.high_activity_time,
+            steps: activityRecord.steps,
+          } : null,
         };
       }
     );

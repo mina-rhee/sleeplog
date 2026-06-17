@@ -10,6 +10,15 @@ export type SleepSession = {
   averageHRV: number;
 };
 
+export type ActivityData = {
+  activityScore: number;
+  sedentaryTime: number;
+  lowActivityTime: number;
+  mediumActivityTime: number;
+  highActivityTime: number;
+  steps: number;
+};
+
 export type SleepData = {
   day: Date;
   bedtimeEnd: Date;
@@ -17,6 +26,7 @@ export type SleepData = {
   sleepScore: number;
   totalSleep: number;
   sessions: SleepSession[];
+  activityData?: ActivityData | null;
 };
 
 // Helper function to format time duration
@@ -86,7 +96,7 @@ const ScoreCard: React.FC<ScoreCardProps> = (props) => {
       </div>
     );
   }
-  const { sleepScore, day, totalSleep, bedtimeStart, bedtimeEnd, sessions } =
+  const { sleepScore, day, totalSleep, bedtimeStart, bedtimeEnd, sessions, activityData } =
     props.data;
 
   console.log("props data", props.data);
@@ -100,24 +110,54 @@ const ScoreCard: React.FC<ScoreCardProps> = (props) => {
     >
       {/* Header */}
       <div className="day-header">{getDayDisplay(day)}</div>
-      <div className="score-section">{sleepScore}</div>
+      <div className="score-section">{sleepScore} <span className="activity-label">sleep</span></div>
 
       {/* Sleep Details */}
       <div className="timing-section">
-        <div className="total-sleep">{formatDuration(totalSleep)} </div>
-        <div className="sleep-timespan">
-          {formatTime(bedtimeStart)} - {formatTime(bedtimeEnd)}{" "}
-          {sessions.length > 1 && (
-            <span className="nap-section">
-              + {sessions.length - 1} {sessions.length > 2 ? "naps" : "nap"}
-            </span>
-          )}
+        <div className="sleep-duration-row">
+          <span className="total-sleep">{formatDuration(totalSleep)}</span>
+          <span className="sleep-timespan">
+            {formatTime(bedtimeStart)} - {formatTime(bedtimeEnd)}
+            {sessions.length > 1 && (
+              <span className="nap-section">
+                {" "}+ {sessions.length - 1} {sessions.length > 2 ? "naps" : "nap"}
+              </span>
+            )}
+          </span>
         </div>
         <div className="sleep-heart">
-          <span className="heart-emoji">🫀</span> {sessions[0].lowestHeartRate}
+          <span className="heart-emoji">📈</span> {sessions[0].lowestHeartRate}
           bpm, avg HRV {sessions[0].averageHRV}
         </div>
       </div>
+      {/* Activity Section */}
+      {activityData && (() => {
+        const zones = [
+          { key: "low",    time: activityData.lowActivityTime,    label: "low",    cls: "activity-low" },
+          { key: "medium", time: activityData.mediumActivityTime, label: "medium", cls: "activity-medium" },
+          { key: "high",   time: activityData.highActivityTime,   label: "high",   cls: "activity-high" },
+        ];
+        const activeTotal = zones.reduce((s, z) => s + z.time, 0);
+        const pct = (t: number) => activeTotal > 0 ? `${(t / activeTotal * 100).toFixed(1)}%` : "0%";
+        const fmtMins = (s: number) => {
+          const m = Math.round(s / 60);
+          return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`;
+        };
+        return (
+          <div className="activity-section" style={{ "--activity-score-color": getScoreColor(activityData.activityScore) } as React.CSSProperties}>
+            <div className="activity-score">{activityData.activityScore} <span className="activity-label">activity</span></div>
+            <div className="activity-bar">
+              {zones.map(z => (
+                <div key={z.key} className={`activity-bar-segment ${z.cls}`} style={{ width: pct(z.time) }}>
+                  <span className="segment-time">{fmtMins(z.time)}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="activity-steps">👟 {activityData.steps.toLocaleString()} steps</div>
+          </div>
+        );
+      })()}
       {/* Nap Section */}
       {sessions.length > 1 && (
         <>

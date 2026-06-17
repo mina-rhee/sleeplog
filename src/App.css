@@ -171,8 +171,20 @@ body {
   margin-bottom: 5px;
 }
 
+.sleep-duration-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
 .total-sleep {
   font-size: 0.9rem;
+}
+
+.sleep-timespan {
+  font-size: 0.62rem;
+  font-weight: 400;
+  opacity: 0.9;
 }
 
 /* Details Section */
@@ -216,6 +228,78 @@ body {
   font-size: 0.7rem;
   font-weight: 600;
   margin-top: 2px;
+}
+
+/* Activity Section */
+.activity-section {
+  margin-top: 10px;
+  font-size: 0.8rem;
+}
+
+.activity-score {
+  color: var(--activity-score-color);
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+
+.activity-label {
+  font-size: 0.65rem;
+  font-weight: 300;
+  color: #f4f4f4;
+  opacity: 0.6;
+}
+
+.activity-bar {
+  display: flex;
+  height: 24px;
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 5px 0 0;
+}
+
+.activity-bar-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.activity-low    { background-color: #4ade80; }
+.activity-medium { background-color: #fbbf24; }
+.activity-high   { background-color: #ef4444; }
+
+.segment-time {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 3px;
+}
+
+.activity-bar-labels {
+  display: flex;
+  margin-top: 3px;
+  margin-bottom: 4px;
+}
+
+.segment-label {
+  font-size: 0.5rem;
+  font-weight: 500;
+  opacity: 0.9;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.activity-steps {
+  font-size: 0.68rem;
+  font-weight: 400;
+  opacity: 0.9;
+  padding-top: 5px;
 }
 
 /* Empty State */

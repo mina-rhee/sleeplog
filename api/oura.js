@@ -36,8 +36,8 @@ export default async function handler(req, res) {
   try {
     console.log("Fetching from Oura API...");
 
-    // Fetch both endpoints concurrently
-    const [dailySleepResponse, sleepResponse] = await Promise.all([
+    // Fetch all endpoints concurrently
+    const [dailySleepResponse, sleepResponse, dailyActivityResponse] = await Promise.all([
       fetch(
         `https://api.ouraring.com/v2/usercollection/daily_sleep?start_date=${start_date}&end_date=${end_date}`,
         {
@@ -54,17 +54,26 @@ export default async function handler(req, res) {
           },
         }
       ),
+      fetch(
+        `https://api.ouraring.com/v2/usercollection/daily_activity?start_date=${start_date}&end_date=${end_date}`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.OURA_ACCESS_TOKEN}`,
+          },
+        }
+      ),
     ]);
 
     // Check if requests were successful
-    if (!dailySleepResponse.ok || !sleepResponse.ok) {
+    if (!dailySleepResponse.ok || !sleepResponse.ok || !dailyActivityResponse.ok) {
       throw new Error(
-        `HTTP error! daily: ${dailySleepResponse.status}, sleep: ${sleepResponse.status}`
+        `HTTP error! daily: ${dailySleepResponse.status}, sleep: ${sleepResponse.status}, activity: ${dailyActivityResponse.status}`
       );
     }
 
     const dailySleepData = (await dailySleepResponse.json()).data || [];
     const sleepData = (await sleepResponse.json()).data || [];
+    const dailyActivityData = (await dailyActivityResponse.json()).data || [];
 
     console.log(
       `Daily sleep records: ${dailySleepData.length}, Sleep records: ${sleepData.length}`
@@ -74,6 +83,11 @@ export default async function handler(req, res) {
     const dailySleepMap = new Map();
     dailySleepData.forEach((dayData) => {
       dailySleepMap.set(dayData.day, dayData);
+    });
+
+    const dailyActivityMap = new Map();
+    dailyActivityData.forEach((dayData) => {
+      dailyActivityMap.set(dayData.day, dayData);
     });
 
     // Group sleep sessions by day and aggregate them
@@ -105,12 +119,14 @@ export default async function handler(req, res) {
           return b.totalSleepDuration - a.totalSleepDuration;
         })[0];
 
+        const activityRecord = dailyActivityMap.get(day);
+
         return {
           bedtimeEnd: new Date(mainSession.bedtime_end),
           bedtimeStart: new Date(mainSession.bedtime_start),
           day: new Date(day),
           sleepScore: dailyData ? dailyData.score || 0 : 0,
-          totalSleep: totalSleepDuration, // Total sleep across all sessions
+          totalSleep: totalSleepDuration,
           sessions: sessions.map((session) => ({
             start: new Date(session.bedtime_start),
             end: new Date(session.bedtime_end),
@@ -118,6 +134,14 @@ export default async function handler(req, res) {
             lowestHeartRate: session.lowest_heart_rate,
             averageHRV: session.average_hrv,
           })),
+          activityData: activityRecord ? {
+            activityScore: activityRecord.score,
+            sedentaryTime: activityRecord.sedentary_time,
+            lowActivityTime: activityRecord.low_activity_time,
+            mediumActivityTime: activityRecord.medium_activity_time,
+            highActivityTime: activityRecord.high_activity_time,
+            steps: activityRecord.steps,
+          } : null,
         };
       }
     );

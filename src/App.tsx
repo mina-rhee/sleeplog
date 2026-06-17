@@ -93,7 +93,7 @@ const App: React.FC = () => {
       <div className="content-wrapper">
         <div className="header-section">
           <div className="title">
-            ⋆˙⟡&nbsp;&nbsp;how did mina sleep?&nbsp;&nbsp;⋆˙⟡
+            ⋆˙⟡&nbsp;&nbsp;how is mina doing?&nbsp;&nbsp;⋆˙⟡
           </div>
         </div>
 
