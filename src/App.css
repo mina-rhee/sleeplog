@@ -25,7 +25,7 @@ body {
   position: absolute;
   width: 360px; /* image is 8000x4491; scaled down */
   height: auto;
-  opacity: 0.08; /* faint in dark mode */
+  opacity: 0.15; /* faint in dark mode */
   will-change: transform;
   animation-name: cloudDrift;
   animation-timing-function: linear;
@@ -42,11 +42,6 @@ body {
 .cloud:nth-child(2) { top: 38%; width: 440px; animation-duration: 89s; animation-delay: -48s; }
 .cloud:nth-child(3) { top: 62%; width: 300px; animation-duration: 53s; animation-delay: -25s; }
 .cloud:nth-child(4) { top: 80%; width: 400px; animation-duration: 79s; animation-delay: -63s; }
-
-/* Mobile: bump dark mode clouds up so they stay visible on small screens */
-@media (max-width: 768px) {
-  .cloud { opacity: 0.12; }
-}
 
 /* Light mode: tint the white cloud gray so it reads on the cream bg */
 body.day-mode .cloud { filter: brightness(0.45); opacity: 0.16; }
